@@ -4,6 +4,7 @@ llm:
   model: "mock-model"
   temperature: 0
   api_key_env: "CQG_LLM_API_KEY"
+  max_doc_chars: 24000   # budget de caracteres pour l'extrait representatif juge par le LLM
 paths:
   workdir: "./workdir"
 thresholds:

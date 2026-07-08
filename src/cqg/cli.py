@@ -20,6 +20,7 @@ def run(corpus_dir: str, config_path: str, out_dir: str) -> dict:
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     threshold = cfg.get("thresholds", {}).get("coverage_flag_below", 0.7)
     use_docling = cfg.get("parsing", {}).get("use_docling", False)
+    max_doc_chars = cfg.get("llm", {}).get("max_doc_chars", 24000)
     scores, parsed, errors = [], [], []
     for item in triage_corpus(corpus_dir):
         doc_id = item["doc_id"]
@@ -28,7 +29,7 @@ def run(corpus_dir: str, config_path: str, out_dir: str) -> dict:
                                  pages=item.get("pages"))
             parsed.append((doc.doc_id, doc.markdown))
             metrics = compute_metrics(doc, reg)
-            criteria = score_document(doc, reg, metrics, llm, chash)
+            criteria = score_document(doc, reg, metrics, llm, chash, max_doc_chars=max_doc_chars)
             ds = compute_doc_score(doc.doc_id, criteria, reg, doc.parse_confidence, chash, threshold)
         except Exception as exc:
             # Score-and-flag : un document en echec est signale pour revue humaine, jamais

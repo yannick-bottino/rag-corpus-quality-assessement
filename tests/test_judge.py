@@ -48,3 +48,16 @@ def test_llm_score_out_of_scale_demoted():
 def test_llm_na_from_model_is_ignored():
     by_id = _scored({"status": "na", "score": None, "justification": "x"})
     assert by_id["2.5"].status == "not_evaluated"
+
+def test_representative_excerpt_covers_whole_document():
+    from cqg.judge import _representative_excerpt
+    md = ("DEBUT " + "a"*10000 + " MILIEU " + "b"*10000 + " FIN_UNIQUE_MARQUEUR")
+    ex = _representative_excerpt(md, budget=8000)
+    assert len(ex) <= 8000 + 200
+    assert "DEBUT" in ex
+    assert "FIN_UNIQUE_MARQUEUR" in ex  # la fin du document est echantillonnee, pas seulement le debut
+
+def test_short_document_returned_whole():
+    from cqg.judge import _representative_excerpt
+    md = "petit document"
+    assert _representative_excerpt(md, budget=24000) == md
