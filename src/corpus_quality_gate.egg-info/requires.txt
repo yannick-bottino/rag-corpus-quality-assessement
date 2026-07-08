@@ -1,0 +1,17 @@
+pydantic>=2.6
+pyyaml>=6.0
+openpyxl>=3.1
+pypdf>=4.0
+docling>=2.0
+semhash>=0.3
+
+[anthropic]
+anthropic>=0.34
+
+[dev]
+pytest>=8.0
+pip-licenses>=4.4
+reportlab>=4.0
+
+[openai]
+openai>=1.30
