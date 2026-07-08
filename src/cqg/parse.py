@@ -11,8 +11,15 @@ def _docling_available() -> bool:
 
 
 def _parse_docling(path: str) -> tuple[str, list[Block]]:
-    from docling.document_converter import DocumentConverter
-    result = DocumentConverter().convert(path)
+    from docling.document_converter import DocumentConverter, PdfFormatOption
+    from docling.datamodel.base_models import InputFormat
+    from docling.datamodel.pipeline_options import PdfPipelineOptions
+    # Corpus ne-numerique : pas d'OCR (cadrage). Desactiver l'OCR evite aussi la saturation
+    # memoire observee sur les PDF riches en images. La detection de structure de tableaux reste active.
+    opts = PdfPipelineOptions(do_ocr=False)
+    converter = DocumentConverter(
+        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
+    result = converter.convert(path)
     md = result.document.export_to_markdown()
     blocks: list[Block] = []
     for item, _level in result.document.iterate_items():

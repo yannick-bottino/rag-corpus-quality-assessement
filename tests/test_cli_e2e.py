@@ -28,12 +28,12 @@ def test_run_isolates_and_flags_bad_document(tmp_path):
     for _ in range(30):
         to.textLine("Version v1.0 du 2026-01-01.")
     c.drawText(to); c.showPage(); c.save()
-    (corpus / "bad.txt").write_text("ceci n'est pas un pdf", encoding="utf-8")
+    (corpus / "corrupt.pdf").write_bytes(b"%PDF-1.4 fichier corrompu \x00\x01\x02 pas un vrai pdf")
     cfg = tmp_path / "cfg.yaml"
     cfg.write_text("llm:\n  provider: mock\nthresholds:\n  coverage_flag_below: 0.7\n", encoding="utf-8")
     out = tmp_path / "out"
     result = run(str(corpus), str(cfg), str(out))
     assert result["n_docs"] == 2
     assert result["n_errors"] >= 1
-    bad = json.loads((out / "bad.score.json").read_text(encoding="utf-8"))
+    bad = json.loads((out / "corrupt.score.json").read_text(encoding="utf-8"))
     assert any("processing_error" in f for f in bad["flags"])
