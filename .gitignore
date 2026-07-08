@@ -3,4 +3,5 @@ __pycache__/
 .venv/
 workdir/
 *.xlsx
+*.egg-info/
 .superpowers/
