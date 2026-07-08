@@ -19,11 +19,13 @@ def run(corpus_dir: str, config_path: str, out_dir: str) -> dict:
     chash = config_hash(cfg, registry_version="v1", policy_version="v1")
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     threshold = cfg.get("thresholds", {}).get("coverage_flag_below", 0.7)
+    use_docling = cfg.get("parsing", {}).get("use_docling", False)
     scores, parsed, errors = [], [], []
     for item in triage_corpus(corpus_dir):
         doc_id = item["doc_id"]
         try:
-            doc = parse_document(item["path"], item["category"])
+            doc = parse_document(item["path"], item["category"], use_docling=use_docling,
+                                 pages=item.get("pages"))
             parsed.append((doc.doc_id, doc.markdown))
             metrics = compute_metrics(doc, reg)
             criteria = score_document(doc, reg, metrics, llm, chash)

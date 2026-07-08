@@ -14,3 +14,11 @@ def test_pypdf_fallback_extracts_text(tmp_path, monkeypatch):
     assert "Bonjour" in doc.markdown
     assert 0.0 <= doc.parse_confidence <= 1.0
     assert len(doc.blocks) >= 1
+
+
+def test_confidence_penalized_on_low_text_per_page():
+    from cqg.parse import _confidence
+    from cqg.models import Block
+    blocks = [Block(kind="text", text="ok")]
+    # 50 pages, ~2 chars -> tres faible par page -> confiance plafonnee a 0.4
+    assert _confidence("ok", blocks, pages=50) <= 0.4

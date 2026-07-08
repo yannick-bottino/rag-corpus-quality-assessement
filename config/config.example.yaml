@@ -8,3 +8,5 @@ paths:
   workdir: "./workdir"
 thresholds:
   coverage_flag_below: 0.7
+parsing:
+  use_docling: false   # pypdf par defaut (corpus ne-numerique) ; passer a true pour activer Docling (docs riches en tableaux, hardware capable)

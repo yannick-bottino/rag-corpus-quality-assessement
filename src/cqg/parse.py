@@ -41,22 +41,35 @@ def _parse_pypdf(path: str) -> tuple[str, list[Block]]:
     return "\n\n".join(parts), blocks
 
 
-def _confidence(markdown: str, blocks: list[Block]) -> float:
+def _confidence(markdown: str, blocks: list[Block], pages: int | None = None) -> float:
     if not blocks:
         return 0.0
     non_empty = sum(1 for b in blocks if b.text.strip())
     ratio = non_empty / len(blocks)
     length_ok = min(1.0, len(markdown) / 500.0)
-    return round(0.5 * ratio + 0.5 * length_ok, 3)
+    conf = 0.5 * ratio + 0.5 * length_ok
+    # Detection de perte de contenu : une extraction anormalement faible par page
+    # (ex. parser qui echoue silencieusement sur des pages) plafonne la confiance.
+    if pages and pages > 0 and (len(markdown) / pages) < 200:
+        conf = min(conf, 0.4)
+    return round(conf, 3)
 
 
-def parse_document(path: str, category: str) -> ParsedDoc:
-    if _docling_available():
+def parse_document(path: str, category: str, use_docling: bool = False,
+                   pages: int | None = None) -> ParsedDoc:
+    # pypdf par defaut (ne-numerique : complet et rapide). Docling est opt-in.
+    if use_docling and _docling_available():
         try:
             md, blocks = _parse_docling(path)
+            md_pypdf, blocks_pypdf = _parse_pypdf(path)
+            # Garde anti-degradation : Docling peut rendre une extraction partielle SANS lever
+            # (ex. saturation memoire sur certaines pages). Si le volume de texte s'effondre
+            # face a pypdf, on retombe sur pypdf pour ne pas perdre du contenu en silence.
+            if len(md) < 0.6 * len(md_pypdf):
+                md, blocks = md_pypdf, blocks_pypdf
         except Exception:
             md, blocks = _parse_pypdf(path)
     else:
         md, blocks = _parse_pypdf(path)
     return ParsedDoc(doc_id=Path(path).stem, markdown=md, blocks=blocks,
-                     parse_confidence=_confidence(md, blocks))
+                     parse_confidence=_confidence(md, blocks, pages))
