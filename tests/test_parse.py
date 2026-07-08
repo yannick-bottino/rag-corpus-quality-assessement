@@ -22,3 +22,18 @@ def test_confidence_penalized_on_low_text_per_page():
     blocks = [Block(kind="text", text="ok")]
     # 50 pages, ~2 chars -> tres faible par page -> confiance plafonnee a 0.4
     assert _confidence("ok", blocks, pages=50) <= 0.4
+
+
+def test_docling_degraded_falls_back_to_pypdf(tmp_path, monkeypatch):
+    from reportlab.pdfgen import canvas
+    import cqg.parse as parse
+    p = tmp_path / "d.pdf"
+    c = canvas.Canvas(str(p)); to = c.beginText(72, 800)
+    for _ in range(30):
+        to.textLine("Contenu complet ligne de texte reportlab.")
+    c.drawText(to); c.showPage(); c.save()
+    monkeypatch.setattr(parse, "_docling_available", lambda: True)
+    monkeypatch.setattr(parse, "_parse_docling",
+                        lambda path: ("court", [parse.Block(kind="text", text="court")]))
+    doc = parse.parse_document(str(p), "born_digital", use_docling=True)
+    assert "Contenu complet" in doc.markdown  # extraction Docling degradee -> fallback pypdf

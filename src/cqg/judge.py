@@ -9,6 +9,9 @@ def _representative_excerpt(markdown: str, budget: int = 24000) -> str:
     # Jugement document-level : au lieu de tronquer au debut, on echantillonne tout le
     # document. Si le doc tient dans le budget, on le rend entier ; sinon on prend une tete
     # substantielle + des fenetres reparties sur le reste, separees par un marqueur.
+    budget = max(int(budget), 0)
+    if budget == 0:
+        return ""
     if len(markdown) <= budget:
         return markdown
     head = int(budget * 0.5)

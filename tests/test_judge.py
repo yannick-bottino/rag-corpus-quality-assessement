@@ -61,3 +61,8 @@ def test_short_document_returned_whole():
     from cqg.judge import _representative_excerpt
     md = "petit document"
     assert _representative_excerpt(md, budget=24000) == md
+
+def test_excerpt_budget_non_positive_is_safe():
+    from cqg.judge import _representative_excerpt
+    assert _representative_excerpt("X" * 50000, budget=-5) == ""
+    assert _representative_excerpt("X" * 50000, budget=0) == ""
