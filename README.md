@@ -6,6 +6,44 @@ Quality gate for document corpora before RAG ingestion (score-and-flag, referenc
 
 Evalue la qualite intrinseque d'un corpus documentaire heterogene (FR/EN, multimodal) avant chunking et embedding : score et flag les documents faibles pour revue humaine, ne supprime jamais en silence. L'outil ne requiert ni ground truth ni jeu de requetes : chaque document est note independamment, puis les scores sont agreges au niveau du corpus.
 
+## Le pipeline en un coup d'oeil
+
+```
+   corpus PDF (ne-numerique, FR/EN)
+              |
+              v
+  [0] TRIAGE            pypdf : pages / mots / images, hash, categorie
+      inventaire        -> born_digital | scanned | mixed | unreadable
+              |
+              v
+  [1] PARSING           pypdf par defaut (Docling opt-in, garde anti-degradation)
+      -> markdown + blocs + parse_confidence
+              |
+              v
+  [2] SIGNAUX           signaux deterministes (Gopher / RedPajama) + Block Integrity
+      DETERMINISTES     scores D + decisions N/A par inventaire   [code, zero fabrication]
+              |
+              v
+  [3] JUGEMENT LLM      provider-agnostic : mock | openai | azure_openai | anthropic
+      3 etats           scored (1-5 + preuve) | na | not_evaluated
+                        anti-fabrication : jamais de note devinee
+              |
+              v
+  [4] REDONDANCE        corpus : doublons exacts (hash) + quasi-doublons (semhash)
+              |
+              v
+  [5] SCORING +         score pondere : 57 criteres / 8 dimensions
+      RAPPORT           niveau + taux de couverture d'evaluation + flags
+              |
+              +--> <doc>.score.json            (fiche de score par document)
+              +--> corpus_report.xlsx + CSV    (Synthese / Detail / Remediation)
+              +--> corpus_redundancy.json      (redondance au niveau corpus)
+              +--> golden_qa.xlsx / csv        (Q/R de reference, policy editable)
+              |
+              v
+     REVUE HUMAINE (human-in-the-loop) : score-and-flag, jamais de suppression silencieuse
+```
+
 ## Installation
 
 ```bash
