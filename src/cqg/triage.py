@@ -7,7 +7,7 @@ def _sha256(path: Path) -> str:
 def triage_file(path: str) -> dict:
     p = Path(path)
     ext = p.suffix.lower()
-    base = {"doc_id": p.stem, "type": ext.lstrip("."), "hash": _sha256(p)}
+    base = {"doc_id": p.stem, "type": ext.lstrip("."), "hash": _sha256(p), "path": str(p)}
     if ext != ".pdf":
         return {**base, "pages": None, "category": "non_pdf"}
     from pypdf import PdfReader
