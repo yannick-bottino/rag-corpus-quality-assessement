@@ -1,0 +1,10 @@
+llm:
+  provider: mock
+  base_url: ""
+  model: "mock-model"
+  temperature: 0
+  api_key_env: "CQG_LLM_API_KEY"
+paths:
+  workdir: "./workdir"
+thresholds:
+  coverage_flag_below: 0.7
