@@ -10,3 +10,11 @@ def test_metrics_marks_na_and_scores():
     assert "3.1" in m["na"]            # pas d'image
     assert "signals" in m and "non_alpha_fraction" in m["signals"]
     assert all(1 <= v <= 5 for v in m["d_scores"].values())
+
+
+def test_french_textual_date_detected():
+    doc = ParsedDoc(doc_id="d",
+                    markdown="Notice Essen Ciel Juin 2025. Mise a jour au 1er janvier 2026.",
+                    blocks=[Block(kind="text", text="x")], parse_confidence=1.0)
+    m = compute_metrics(doc, load_registry())
+    assert m["d_scores"]["1.4"] >= 3  # date FR textuelle detectee (sans version -> au moins 3)

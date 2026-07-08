@@ -17,8 +17,15 @@ def compute_metrics(doc: ParsedDoc, reg: Registry) -> dict:
         "type_token_ratio": signals.type_token_ratio(text),
         "block_integrity": signals.block_integrity(doc),
     }
-    has_version = _has(text, r"\bv\d+(\.\d+)?\b|version\s+\d+|r[eé]vision\s+\d+")
-    has_date = _has(text, r"\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}")
+    _MONTHS_FR = (r"(?:janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t"
+                  r"|septembre|octobre|novembre|d[eé]cembre)")
+    has_version = _has(text, r"\bv\d+(\.\d+)?\b|version\s+\d+|r[eé]vision\s+\d+|[eé]dition\s+\d{4}")
+    has_date = _has(
+        text,
+        r"\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}"
+        r"|\d{1,2}\s?(?:er)?\s+" + _MONTHS_FR + r"\s+\d{4}"
+        r"|" + _MONTHS_FR + r"\s+\d{4}",
+    )
     d_scores = {
         "1.3": 5 if _has(text, r"auteur|r[eé]dig[eé]|contributeur") else 1,
         "1.4": 5 if (has_version and has_date) else (3 if (has_version or has_date) else 1),
