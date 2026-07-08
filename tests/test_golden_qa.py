@@ -34,3 +34,12 @@ def test_golden_csv_escapes_special_chars(tmp_path):
         parsed = list(_csvmod.reader(f, delimiter=";"))
     assert len(parsed[1]) == len(parsed[0])
     assert any("Oui; couvre incendie." in cell for cell in parsed[1])
+
+def test_golden_csv_neutralizes_formula_injection(tmp_path):
+    import csv as _csvmod
+    rows = [{"id": "d-1", "origine": "document", "question": "=cmd()", "reponse": "ok",
+             "sources": "s", "couvert": "oui", "statut_validation": "a_valider", "commentaire_beta": ""}]
+    paths = write_golden_qa(rows, str(tmp_path))
+    with open(paths["csv"], encoding="utf-8-sig", newline="") as f:
+        parsed = list(_csvmod.reader(f, delimiter=";"))
+    assert any(cell.startswith("'=cmd") for cell in parsed[1])

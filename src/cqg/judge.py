@@ -56,8 +56,11 @@ def score_document(doc: ParsedDoc, reg: Registry, metrics: dict,
             final_status, final_score = "scored", score
         else:
             final_status, final_score = "not_evaluated", None
-            if not justification:
-                justification = "Non evalue: reponse LLM incomplete ou non conforme."
+            if status == "scored":
+                reason = "Non evalue: reponse LLM 'scored' non conforme (score ou justification invalide)."
+                justification = f"{reason} {justification}".strip() if justification else reason
+            elif not justification:
+                justification = "Non evalue: reponse LLM incomplete."
         out.append(CriterionScore(**base, status=final_status, score=final_score,
                                   justification=justification, evidence=resp.get("evidence")))
     return out

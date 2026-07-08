@@ -4,6 +4,7 @@ from pathlib import Path
 from openpyxl import Workbook
 from .models import ParsedDoc
 from .llm.base import LLMClient
+from .report import _sanitize_cell
 
 _COLS = ["id", "origine", "question", "reponse", "sources", "couvert",
          "statut_validation", "commentaire_beta"]
@@ -46,7 +47,7 @@ def write_golden_qa(rows: list[dict], out_dir: str) -> dict:
     wb = Workbook(); ws = wb.active; ws.title = "golden_qa"
     ws.append(_COLS)
     for r in rows:
-        ws.append([r[c] for c in _COLS])
+        ws.append([_sanitize_cell(r[c]) for c in _COLS])
     xlsx = out / "golden_qa.xlsx"; wb.save(xlsx)
     csv_path = out / "golden_qa.csv"
     # csv.writer echappe ; guillemets et retours ligne ; utf-8-sig pour les accents dans Excel.
@@ -54,5 +55,5 @@ def write_golden_qa(rows: list[dict], out_dir: str) -> dict:
         writer = csv.writer(f, delimiter=";")
         writer.writerow(_COLS)
         for r in rows:
-            writer.writerow([r[c] for c in _COLS])
+            writer.writerow([_sanitize_cell(r[c]) for c in _COLS])
     return {"xlsx": str(xlsx), "csv": str(csv_path)}

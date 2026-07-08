@@ -31,7 +31,7 @@ def run(corpus_dir: str, config_path: str, out_dir: str) -> dict:
         except Exception as exc:
             # Score-and-flag : un document en echec est signale pour revue humaine, jamais
             # abandonne en silence et ne fait jamais tomber le reste du corpus.
-            ds = DocScore(doc_id=doc_id, global_pct=0.0, level="Inadapte", coverage_pct=0.0,
+            ds = DocScore(doc_id=doc_id, global_pct=0.0, level="Inadapté", coverage_pct=0.0,
                           dimensions={}, criteria=[], worst_sections=[],
                           flags=[f"processing_error: {type(exc).__name__}"], config_hash=chash)
             errors.append({"doc_id": doc_id, "error": f"{type(exc).__name__}: {exc}"})

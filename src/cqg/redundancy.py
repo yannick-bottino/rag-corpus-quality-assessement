@@ -17,7 +17,7 @@ def corpus_redundancy(docs: list[tuple[str, str]]) -> dict:
         buckets[hashlib.sha256(_norm(text).encode()).hexdigest()].append(doc_id)
     exact = [ids for ids in buckets.values() if len(ids) > 1]
     near = []
-    if _semhash_available():
+    if _semhash_available() and docs:
         from semhash import SemHash
         records = [t for _, t in docs]
         ids = [d for d, _ in docs]

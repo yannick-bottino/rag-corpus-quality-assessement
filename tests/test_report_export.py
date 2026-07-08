@@ -33,3 +33,14 @@ def test_csv_escapes_special_chars(tmp_path):
     header, data = rows[0], rows[1]
     assert len(data) == len(header)
     assert any("faible; voir page 1" in cell for cell in data)
+
+def test_csv_neutralizes_formula_injection(tmp_path):
+    import csv as _csvmod
+    crit = CriterionScore(id="1.3", tag="D", weight=1, status="scored", score=2,
+                          justification="=SUM(A1:A9)", evidence="p.1")
+    ds = DocScore(doc_id="d1", global_pct=65.0, level="Insuffisant", coverage_pct=80.0,
+                  dimensions={"1": 65.0}, criteria=[crit], worst_sections=[], flags=[], config_hash="h")
+    paths = write_corpus_report([ds], load_registry(), str(tmp_path))
+    with open(paths["csv_detail"], encoding="utf-8-sig", newline="") as f:
+        rows = list(_csvmod.reader(f, delimiter=";"))
+    assert any(cell.startswith("'=SUM") for cell in rows[1])
